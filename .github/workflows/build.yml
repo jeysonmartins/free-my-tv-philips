@@ -18,10 +18,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Create default config and Build
+      - name: Create config and Build APK
         run: |
           touch config.properties
           chmod +x build.sh
