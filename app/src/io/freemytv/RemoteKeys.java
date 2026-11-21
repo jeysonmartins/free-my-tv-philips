@@ -150,11 +150,18 @@ final class RemoteKeys {
         // Sony sends BUTTON_9 for five app buttons (BUTTON_4 for Netflix, BUTTON_8 for Google Play): only the scan code
         // tells them apart. The BRAVIA VU31's remote sends BUTTON_2 and BUTTON_15 too (Prefs.sonyKey). The BRAVIA 8 II
         // (BRAVIA_AE2, Google TV 14) sends VIDEO_APP_1 to _8 with the same scan codes (583 Netflix, 485 YouTube).
-        if (SONY && (keyCode == KeyEvent.KEYCODE_BUTTON_4 || keyCode == KeyEvent.KEYCODE_BUTTON_8
+                if (SONY && (keyCode == KeyEvent.KEYCODE_BUTTON_4 || keyCode == KeyEvent.KEYCODE_BUTTON_8
                 || keyCode == KeyEvent.KEYCODE_BUTTON_9 || keyCode == KeyEvent.KEYCODE_BUTTON_2
                 || keyCode == KeyEvent.KEYCODE_BUTTON_15
                 || keyCode >= KEYCODE_VIDEO_APP_1 && keyCode <= KEYCODE_VIDEO_APP_8)) {
             keyCode = Prefs.sonyKey(e.getScanCode());
+        }
+        if (PHILIPS_GTV) {
+            if (keyCode == 83) keyCode = 811;
+            else if (keyCode == 284) keyCode = 816;
+            else if (keyCode == 265) keyCode = 475;
+            else if (keyCode == 190) keyCode = 781;
+            else if (keyCode == 206) keyCode = 788;
         }
         boolean ours = false;
         for (int key : Prefs.KEYS) ours |= key == keyCode;
