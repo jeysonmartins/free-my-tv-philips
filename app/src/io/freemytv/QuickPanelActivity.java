@@ -92,10 +92,7 @@ public class QuickPanelActivity extends Activity {
             new Tile(Ui.tr("Network"), "wifi", 0xFF0A84FF,
                     new Intent().setClassName(TV_SETTINGS, "com.android.tv.settings.connectivity.NetworkActivity"),
                     new Intent(Settings.ACTION_WIFI_SETTINGS)),
-            new Tile(Ui.tr("Bluetooth"), "bluetooth", 0xFF3F7CFF,
-                    new Intent(Intent.ACTION_MAIN).setClassName(TV_SETTINGS, "com.android.tv.settings.accessories.AddAccessoryActivity"),
-                    new Intent().setClassName(TV_SETTINGS, "com.android.tv.settings.MainSettings"),
-                    new Intent(Settings.ACTION_BLUETOOTH_SETTINGS)),
+            new Tile(Ui.tr("Bluetooth"), "bluetooth", 0xFF3F7CFF),
             new Tile(Ui.tr("Accessibility"), "accessibility", 0xFF30D158, new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)),
             new Tile(Ui.tr("Settings"), "settings", 0xFF8E8E9A, new Intent(Settings.ACTION_SETTINGS)),
         };
@@ -129,6 +126,7 @@ public class QuickPanelActivity extends Activity {
     }
 
     private boolean open(Intent... intents) {
+        if (intents == null) return false;
         for (Intent intent : intents) {
             try {
                 startActivity(new Intent(intent).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
@@ -648,6 +646,8 @@ public class QuickPanelActivity extends Activity {
                         Runtime.getRuntime().exec(new String[]{"sh", "-c", "am start -a android.intent.action.MAIN -n com.android.tv.settings/.accessories.AddAccessoryActivity"});
                     } catch (Exception ignored) {}
                 }).start();
+                finish();
+                return;
             }
             if (open(tiles[focus].intents)) finish();
         }
