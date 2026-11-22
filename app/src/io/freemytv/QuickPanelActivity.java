@@ -54,6 +54,7 @@ public class QuickPanelActivity extends Activity {
 
     private static final String TV_SETTINGS = "com.android.tv.settings";
     private static final int INPUTS = 0;
+    private static final int BLUETOOTH = 4;
     /** The panel in a 1920×1080 space: its size and the margin to the screen's corner. */
     private static final float W = 600, H = 800, MARGIN = 40;
 
@@ -91,9 +92,7 @@ public class QuickPanelActivity extends Activity {
             new Tile(Ui.tr("Network"), "wifi", 0xFF0A84FF,
                     new Intent().setClassName(TV_SETTINGS, "com.android.tv.settings.connectivity.NetworkActivity"),
                     new Intent(Settings.ACTION_WIFI_SETTINGS)),
-            new Tile(Ui.tr("Bluetooth"), "bluetooth", 0xFF3F7CFF,
-                    new Intent().setClassName(TV_SETTINGS, "com.android.tv.settings.MainSettings"),
-                    new Intent(Settings.ACTION_BLUETOOTH_SETTINGS)),
+            new Tile(Ui.tr("Bluetooth"), "bluetooth", 0xFF3F7CFF),
             new Tile(Ui.tr("Accessibility"), "accessibility", 0xFF30D158, new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)),
             new Tile(Ui.tr("Settings"), "settings", 0xFF8E8E9A, new Intent(Settings.ACTION_SETTINGS)),
         };
@@ -161,7 +160,6 @@ public class QuickPanelActivity extends Activity {
         private boolean inputsOpen, closing;
         private int focus, inputFocus;
 
-        // Motion: the panel coming in, the focus lens (position and size), a press, the grid / Inputs list swap.
         private final Spring show = new Spring(0.5f, 0.78f, 0);
         private final Spring lensX = new Spring(0.36f, 0.72f, 0), lensY = new Spring(0.36f, 0.72f, 0);
         private final Spring lensW = new Spring(0.36f, 0.8f, 0), lensH = new Spring(0.36f, 0.8f, 0);
@@ -169,7 +167,6 @@ public class QuickPanelActivity extends Activity {
         private final Spring page = new Spring(0.4f, 0.9f, 0);
         private long lastFrame;
 
-        // The home screen's look: white glass with dark ink by day, smoked glass with white ink at night.
         private final boolean night;
         private final int ink, focusInk, tileFill;
         private final String inputsTitle = Ui.tr("Inputs"), noInputs = Ui.tr("No inputs");
@@ -184,11 +181,10 @@ public class QuickPanelActivity extends Activity {
         private LinearGradient tint, sheen, cardRim, tileRim, lens;
         private RadialGradient[] glows;
         private final float[] glowX = {0.2f, 0.95f, 0.3f}, glowY = {0.15f, 0.55f, 0.95f};
-        // Each chip color's gradient, made once and looked up by color (no boxing in onDraw).
         private final int[] chipColor = new int[16];
         private final LinearGradient[] chipShader = new LinearGradient[16];
         private int chips;
-        private final float[] tileX = new float[8], tileY = new float[8], labelSize = new float[8];   // labelSize: shrunk to fit long words
+        private final float[] tileX = new float[8], tileY = new float[8], labelSize = new float[8];
         private float tileW;
 
         private final Runnable frame = new Runnable() {
@@ -196,7 +192,7 @@ public class QuickPanelActivity extends Activity {
                 invalidate();
             }
         };
-        /** Once a minute: the date and time, formatted here rather than every frame. */
+
         private final Runnable tick = new Runnable() {
             @Override public void run() {
                 long now = System.currentTimeMillis();
@@ -259,7 +255,6 @@ public class QuickPanelActivity extends Activity {
                     else focus = id - 1;
                     aimLens(false);
                     invalidate();
-                    spoken.focusMoved();
                 }
                 @Override public void click(int id) { select(); }
             });
@@ -275,7 +270,6 @@ public class QuickPanelActivity extends Activity {
 
         @Override protected void onSizeChanged(int w, int h, int oldw, int oldh) {
             card.set(0, 0, w, h);
-            // ~95% opaque: with no blur behind it, the glass has to hold the text on its own, over a white or black screen.
             tint = night ? new LinearGradient(0, 0, 0, h, 0xF22C2C30, 0xF71C1C1E, Shader.TileMode.CLAMP)
                     : new LinearGradient(0, 0, 0, h, 0xF7FBFBFD, 0xF2EBEBF0, Shader.TileMode.CLAMP);
             sheen = new LinearGradient(0, 0, 0, h * 0.42f, night ? 0x1FFFFFFF : 0x66FFFFFF, 0x00FFFFFF, Shader.TileMode.CLAMP);
@@ -285,7 +279,6 @@ public class QuickPanelActivity extends Activity {
                     : new LinearGradient(0, 0, 0, TILE_H * k, 0x0A000000, 0x1A000000, Shader.TileMode.CLAMP);
             lens = night ? new LinearGradient(0, 0, 0, TILE_H * k, 0xFFFFFFFF, 0xFFE4E8F4, Shader.TileMode.CLAMP)
                     : new LinearGradient(0, 0, 0, TILE_H * k, 0xFF3A3A3C, 0xFF1D1D1F, Shader.TileMode.CLAMP);
-            // Faint light resting in the glass: it doesn't drift, the panel draws only while something moves.
             float r = 380 * k;
             glows = new RadialGradient[] {
                 new RadialGradient(0, 0, r, 0x267A4DFF, 0x007A4DFF, Shader.TileMode.CLAMP),
@@ -324,7 +317,6 @@ public class QuickPanelActivity extends Activity {
             invalidate();
         }
 
-        /** Points the lens at the focused tile, or the focused row of the Inputs list. */
         private void aimLens(boolean snap) {
             float x, y, w, h;
             if (inputsOpen) {
@@ -351,7 +343,6 @@ public class QuickPanelActivity extends Activity {
             }
         }
 
-        /** The first Inputs row on screen: the list scrolls to keep the focused one in view. */
         private int firstRow() {
             return Math.max(0, Math.min(inputFocus - ROWS_VISIBLE + 1, inputs == null ? 0 : inputs.size() - ROWS_VISIBLE));
         }
@@ -388,15 +379,14 @@ public class QuickPanelActivity extends Activity {
             if (moving) {
                 postOnAnimation(frame);
             } else {
-                lastFrame = 0;   // at rest: the next move starts from one frame, not from the time spent still
+                lastFrame = 0;
             }
         }
 
-        /** Tinted glass with faint light inside, a sheen at the top and a bright rim. */
         private void drawGlass(Canvas c) {
             float r = CARD_R * k;
             c.saveLayer(card, layer);
-            fill.setAlpha(255);   // a shader is still scaled by the paint's alpha, which the last tile left low
+            fill.setAlpha(255);
             fill.setShader(tint);
             c.drawRoundRect(card, r, r, fill);
             fill.setShader(null);
@@ -426,7 +416,6 @@ public class QuickPanelActivity extends Activity {
             c.drawText(clockText, PAD * k - clockBearing, (PAD + 116) * k, clock);
         }
 
-        /** The grid: glass tiles, the lens under the focused one, then each tile's colored chip and label. */
         private void drawTiles(Canvas c, float a) {
             int saved = c.saveLayerAlpha(card, Math.round(255 * a));
             c.translate(0, (1 - a) * -24 * k);
@@ -454,7 +443,6 @@ public class QuickPanelActivity extends Activity {
             c.restoreToCount(saved);
         }
 
-        /** The Inputs list: a title and one glass row per input, the lens on the focused one. */
         private void drawInputs(Canvas c, float a) {
             int saved = c.saveLayerAlpha(card, Math.round(255 * a));
             c.translate(0, (1 - a) * 24 * k);
@@ -479,7 +467,7 @@ public class QuickPanelActivity extends Activity {
                 HomeApps.Item it = inputs.get(i);
                 float y = rowTop(i);
                 float on = nearness(PAD * k, y, w);
-                float dim = it.connected ? 1 : 0.7f;   // still 4.5:1 on the light glass
+                float dim = it.connected ? 1 : 0.7f;
                 drawChip(c, PAD * k + 46 * k, y + ROW_H * k / 2, it.kind == HomeApps.LIVE_TV ? 0xFFFF9F0A : 0xFF30B0C7,
                         it.symbol != null ? it.symbol : "hdmi", on);
                 rowLabel.setColor(Ui.alpha(mix(ink, focusInk, on), Math.max(dim, on)));
@@ -488,7 +476,6 @@ public class QuickPanelActivity extends Activity {
             c.restoreToCount(saved);
         }
 
-        /** How much the lens covers this tile (1 = resting on it): the label and chip follow it as it flows. */
         private float nearness(float x, float y, float w) {
             float d = Math.abs(lensX.value - x) + Math.abs(lensY.value - y);
             return Math.max(0, 1 - d / (w * 0.6f));
@@ -505,10 +492,6 @@ public class QuickPanelActivity extends Activity {
             c.restore();
         }
 
-        /**
-         * The focus lens: a bright drop of glass that flows to the focused tile, stretching along its way like a
-         * liquid and squashing a little when OK is pressed, with a soft glow of the tile's color around it.
-         */
         private void drawLens(Canvas c, float radius) {
             float vx = Math.abs(lensX.velocity), vy = Math.abs(lensY.velocity);
             float stretchX = Math.min(0.16f, vx / (9000 * k)), stretchY = Math.min(0.16f, vy / (9000 * k));
@@ -536,7 +519,6 @@ public class QuickPanelActivity extends Activity {
             c.restore();
         }
 
-        /** A circle in the tile's color (lighter at the top, like lit glass) with its white symbol. */
         private void drawChip(Canvas c, float cx, float cy, int color, String symbol, float on) {
             float r = CHIP_R * k;
             LinearGradient lit = null;
@@ -596,7 +578,7 @@ public class QuickPanelActivity extends Activity {
                     } else if (!down) {
                         press.target = 0;
                         invalidate();
-                        if (spoken.keyClick()) select();   // TalkBack's click may have come first for this press
+                        if (spoken.keyClick()) select();
                     }
                     return true;
                 default:
@@ -641,7 +623,41 @@ public class QuickPanelActivity extends Activity {
                 spoken.focusMoved();
                 return;
             }
+            if (focus == BLUETOOTH) {
+                openBluetooth();
+                finish();
+                return;
+            }
             if (open(tiles[focus].intents)) finish();
+        }
+
+        private void openBluetooth() {
+            try {
+                Intent btIntent = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
+                btIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(btIntent);
+                return;
+            } catch (Throwable ignored) {}
+
+            new Thread(() -> {
+                boolean success = false;
+                try {
+                    Process p = Runtime.getRuntime().exec(new String[]{
+                        "sh", "-c", "am start -a android.intent.action.MAIN -n com.android.tv.settings/.accessories.AddAccessoryActivity"
+                    });
+                    success = (p.waitFor() == 0);
+                } catch (Throwable ignored) {}
+
+                if (!success) {
+                    runOnUiThread(() -> {
+                        try {
+                            Intent fallback = new Intent().setClassName(TV_SETTINGS, "com.android.tv.settings.MainSettings");
+                            fallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(fallback);
+                        } catch (Throwable ignored) {}
+                    });
+                }
+            }).start();
         }
     }
 }
