@@ -54,6 +54,7 @@ public class QuickPanelActivity extends Activity {
 
     private static final String TV_SETTINGS = "com.android.tv.settings";
     private static final int INPUTS = 0;
+    private static final int BLUETOOTH = 4;
     /** The panel in a 1920×1080 space: its size and the margin to the screen's corner. */
     private static final float W = 600, H = 800, MARGIN = 40;
 
@@ -92,6 +93,7 @@ public class QuickPanelActivity extends Activity {
                     new Intent().setClassName(TV_SETTINGS, "com.android.tv.settings.connectivity.NetworkActivity"),
                     new Intent(Settings.ACTION_WIFI_SETTINGS)),
             new Tile(Ui.tr("Bluetooth"), "bluetooth", 0xFF3F7CFF,
+                    new Intent(Intent.ACTION_MAIN).setClassName(TV_SETTINGS, "com.android.tv.settings.accessories.AddAccessoryActivity"),
                     new Intent().setClassName(TV_SETTINGS, "com.android.tv.settings.MainSettings"),
                     new Intent(Settings.ACTION_BLUETOOTH_SETTINGS)),
             new Tile(Ui.tr("Accessibility"), "accessibility", 0xFF30D158, new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)),
@@ -258,6 +260,7 @@ public class QuickPanelActivity extends Activity {
                     else focus = id - 1;
                     aimLens(false);
                     invalidate();
+                    spoken.focusMoved();
                 }
                 @Override public void click(int id) { select(); }
             });
@@ -638,6 +641,13 @@ public class QuickPanelActivity extends Activity {
                 invalidate();
                 spoken.focusMoved();
                 return;
+            }
+            if (focus == BLUETOOTH) {
+                new Thread(() -> {
+                    try {
+                        Runtime.getRuntime().exec(new String[]{"sh", "-c", "am start -a android.intent.action.MAIN -n com.android.tv.settings/.accessories.AddAccessoryActivity"});
+                    } catch (Exception ignored) {}
+                }).start();
             }
             if (open(tiles[focus].intents)) finish();
         }
