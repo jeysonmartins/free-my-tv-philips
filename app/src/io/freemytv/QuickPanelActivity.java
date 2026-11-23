@@ -92,8 +92,9 @@ public class QuickPanelActivity extends Activity {
             new Tile(Ui.tr("Network"), "wifi", 0xFF0A84FF,
                     new Intent().setClassName(TV_SETTINGS, "com.android.tv.settings.connectivity.NetworkActivity"),
                     new Intent(Settings.ACTION_WIFI_SETTINGS)),
-            new Tile(Ui.tr("Bluetooth"), "bluetooth", 0xFF3F7CFF),
-            new Tile(Ui.tr("Accessibility"), "accessibility", 0xFF30D158, new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)),
+new Tile(Ui.tr("Bluetooth"), "bluetooth", 0xFF3F7CFF,
+        new Intent(Intent.ACTION_MAIN).setClassName(TV_SETTINGS, "com.android.tv.settings.accessories.AddAccessoryActivity"),
+        new Intent().setClassName(TV_SETTINGS, "com.android.tv.settings.MainSettings")),            new Tile(Ui.tr("Accessibility"), "accessibility", 0xFF30D158, new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)),
             new Tile(Ui.tr("Settings"), "settings", 0xFF8E8E9A, new Intent(Settings.ACTION_SETTINGS)),
         };
     }
