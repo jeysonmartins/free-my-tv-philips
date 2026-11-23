@@ -627,7 +627,26 @@ new Tile(Ui.tr("Bluetooth"), "bluetooth", 0xFF3F7CFF,
            
             if (open(tiles[focus].intents)) finish();
         }
-
+        private void openBluetoothPage() {
+            final Context app = getContext().getApplicationContext();
+            new Thread(() -> {
+                boolean ok = false;
+                try (Adb adb = Adb.connect(app, 10_000, null)) {
+                    String out = adb.shell("am start -a android.settings.SLICE_SETTINGS"
+                            + " -n com.android.tv.settings/.slice.SliceActivity"
+                            + " --es slice_uri content://com.android.tv.settings.accessories.sliceprovider/general");
+                    ok = !out.contains("Error");
+                } catch (Throwable e) {
+                    AppLog.w("quick panel: Bluetooth page failed: " + e.getMessage());
+                }
+                if (!ok) {
+                    try {
+                        app.startActivity(new Intent().setClassName(TV_SETTINGS, "com.android.tv.settings.MainSettings")
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                    } catch (Throwable ignored) {}
+                }
+            }).start();
+        }
         private void openBluetooth() {
             try {
                 Intent btIntent = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
