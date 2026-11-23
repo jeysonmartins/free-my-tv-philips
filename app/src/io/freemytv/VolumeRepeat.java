@@ -1,13 +1,13 @@
 package io.freemytv;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.view.KeyEvent;
+import android.widget.Toast;
 
-/**
- * Holding the volume keys: the key filter swallows the repeats, so after a short hold we send them ourselves
- * through the TV's own ADB (keys sent that way skip the filter) until the key is let go.
- */
+/** TEMPORARY test version: shows small messages on screen about what it is doing. */
 final class VolumeRepeat {
     private VolumeRepeat() {}
 
@@ -15,7 +15,10 @@ final class VolumeRepeat {
     private static volatile int held;
     private static volatile long token;
 
-    /** Never consumes the key: the first press goes through as usual. */
+    private static void say(Context app, String msg) {
+        new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(app, msg, Toast.LENGTH_SHORT).show());
+    }
+
     static void onKey(Context c, KeyEvent e) {
         final int code = e.getKeyCode();
         if (code != KeyEvent.KEYCODE_VOLUME_UP && code != KeyEvent.KEYCODE_VOLUME_DOWN) return;
@@ -24,6 +27,7 @@ final class VolumeRepeat {
             held = code;
             final long mine = ++token;
             final Context app = c.getApplicationContext();
+            say(app, "V1 tecla recebida");
             Thread t = new Thread(() -> loop(app, code, mine));
             t.setDaemon(true);
             t.start();
@@ -37,8 +41,10 @@ final class VolumeRepeat {
         try {
             Thread.sleep(FIRST_MS);
             if (token != mine) return;
+            say(app, "V2 segurando");
             long end = SystemClock.uptimeMillis() + MAX_MS;
             try (Adb adb = Adb.connect(app, 5_000, null)) {
+                say(app, "V3 ADB ok");
                 while (token == mine && SystemClock.uptimeMillis() < end) {
                     long start = SystemClock.uptimeMillis();
                     adb.shell("input keyevent " + code);
@@ -46,7 +52,8 @@ final class VolumeRepeat {
                     if (wait > 0) Thread.sleep(wait);
                 }
             }
-        } catch (Throwable ignored) {
+        } catch (Throwable err) {
+            say(app, "V erro: " + err);
         } finally {
             if (token == mine) held = 0;
         }
