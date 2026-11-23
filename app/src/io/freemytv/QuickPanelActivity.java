@@ -624,11 +624,7 @@ new Tile(Ui.tr("Bluetooth"), "bluetooth", 0xFF3F7CFF,
                 spoken.focusMoved();
                 return;
             }
-            if (focus == BLUETOOTH) {
-                openBluetooth();
-                finish();
-                return;
-            }
+           
             if (open(tiles[focus].intents)) finish();
         }
 
