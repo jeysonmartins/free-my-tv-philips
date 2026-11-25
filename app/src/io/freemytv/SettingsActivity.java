@@ -2478,18 +2478,10 @@ public class SettingsActivity extends Activity {
                         : RemoteKeys.GOOGLE_STREAMER ? Ui.tr("The other buttons: the TV itself controls them.")
                         : RemoteKeys.ONN ? Ui.tr("onn default: the button opens what it always did.")
                         : RemoteKeys.supported() ? Ui.tr("Disney and Globoplay: the TV itself controls those buttons.")
-                        : Ui.tr("TCL remote buttons: on this TV they work as always."), LIST_X * k + 30 * k, hy + 38 * k, hint);
-                // No key service on this TV (RemoteKeys.FILTER_SAFE): inside other apps the buttons do nothing.
-                if (!RemoteKeys.FILTER_SAFE) c.drawText(Ui.tr("On this TV they work on Free My TV's home screen only."),
-                        LIST_X * k + 30 * k, hy + 76 * k, hint);
-            }
-        }
-
-        private void activate() {
-            Context c = getContext();
-            if (tellWhy()) return;
-                        if (screen == HOME_SETTINGS && pickScroll + focus == fastVolumeRow()) {
-                adjust(1);
+                                   if (screen == HOME_SETTINGS && pickScroll + focus == fastVolumeRow()) {
+                boolean filterOn = RemoteKeyService.isFilterOn(getContext());
+                RemoteKeyService.setFilter(getContext(), !filterOn);
+                invalidate();
                 return;
             }
             if (screen == HOME_CHOICE) {
