@@ -2338,8 +2338,7 @@ ModeJob.schedule(getContext(), ModeJob.APPLY, HomeMode.FREE, 0);                
                 } else if (focus == 1 && freeActive()) {
                     pendingAt = SystemClock.uptimeMillis();
                     requestedAt = System.currentTimeMillis();
-                    ModeJob.schedule(getContext(), "switch", HomeMode.ORIGINAL, 0);
-                    spoken.focusMoved();
+ModeJob.schedule(getContext(), ModeJob.APPLY, HomeMode.ORIGINAL, 0);                    spoken.focusMoved();
                 }
             } else if (screen == HOME_SETTINGS) {
                 int row = pickScroll + focus;
