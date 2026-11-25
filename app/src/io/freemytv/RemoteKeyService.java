@@ -10,14 +10,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 
-/**
- * Remote Keys accessibility service. Also supports switching the key filter on/off at runtime via broadcast, so the
- * user can trade between fast volume (filter off) and remapped app buttons (filter on).
- *
- * Toggle with:
- *   adb shell am broadcast -a io.freemytv.SET_FILTER --ez filter_on false   # volume rápido
- *   adb shell am broadcast -a io.freemytv.SET_FILTER --ez filter_on true    # botões remapeados
- */
 public class RemoteKeyService extends AccessibilityService {
     private static final String TAG = "FreeMyTV-Keys";
     public static final String ACTION_SET_FILTER = "io.freemytv.SET_FILTER";
@@ -25,19 +17,37 @@ public class RemoteKeyService extends AccessibilityService {
 
     private BroadcastReceiver filterReceiver;
 
+    public static boolean isFilterOn(Context context) {
+        return context.getSharedPreferences("settings", Context.MODE_PRIVATE).getBoolean("key_filter", true);
+    }
+
+    public static void setFilter(Context context, boolean on) {
+        context.getSharedPreferences("settings", Context.MODE_PRIVATE).edit().putBoolean("key_filter", on).apply();
+        Intent intent = new Intent(ACTION_SET_FILTER);
+        intent.putExtra(EXTRA_FILTER_ON, on);
+        context.sendBroadcast(intent);
+    }
+
     @Override protected void onServiceConnected() {
         super.onServiceConnected();
         Log.d(TAG, "onServiceConnected");
+
+        AccessibilityServiceInfo info = getServiceInfo();
+        if (info != null) {
+            if (isFilterOn(this)) {
+                info.flags |= AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
+            } else {
+                info.flags &= ~AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
+            }
+            setServiceInfo(info);
+        }
 
         filterReceiver = new BroadcastReceiver() {
             @Override public void onReceive(Context context, Intent intent) {
                 if (!ACTION_SET_FILTER.equals(intent.getAction())) return;
                 boolean on = intent.getBooleanExtra(EXTRA_FILTER_ON, true);
                 AccessibilityServiceInfo info = getServiceInfo();
-                if (info == null) {
-                    Log.w(TAG, "setServiceInfo: info null (service not connected yet?)");
-                    return;
-                }
+                if (info == null) return;
                 if (on) {
                     info.flags |= AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
                 } else {
@@ -59,7 +69,6 @@ public class RemoteKeyService extends AccessibilityService {
     }
 
     @Override protected boolean onKeyEvent(KeyEvent event) {
-        Log.d(TAG, "onKeyEvent code=" + event.getKeyCode() + " action=" + event.getAction() + " repeat=" + event.getRepeatCount());
         return RemoteKeys.onKey(this, event);
     }
 
