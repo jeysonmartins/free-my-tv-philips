@@ -1032,22 +1032,20 @@ public class SettingsActivity extends Activity {
             l.add(Ui.tr("TMDB key"));
             l.add(Ui.tr("Watchmode key"));
             l.add(Ui.tr("Updates"));
+            l.add("Fast Volume (No App Buttons)");
+
+
             return l.toArray(new String[0]);
         }
 
         /** The Updates row: the last one, after the coins and the keys. */
         private int updatesRow() {
-            return settingLabels().length - 1;
-        }
+    return settingLabels().length - 2;
+}
 
-        private int keyRow() {
-            return updatesRow() - 2;
-        }
-
-        private int watchmodeRow() {
-            return updatesRow() - 1;
-        }
-
+private int fastVolumeRow() {
+    return settingLabels().length - 1;
+}
         /** A key's row: "Not set", or the key's last 4 characters (all that's ever shown of it). */
         private static String keyValue(String key) {
             return key.length() < 4 ? Ui.tr("Not set") : "•••• " + key.substring(key.length() - 4);
