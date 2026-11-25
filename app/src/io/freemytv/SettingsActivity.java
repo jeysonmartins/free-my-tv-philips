@@ -1134,11 +1134,12 @@ private int fastVolumeRow() {
             if (HOME_ROW >= 0) v[HOME_ROW] = onOff(HomeAssistant.on(getContext()));
             v[QUOTES_ROW] = onOff(Prefs.quotes());
             // No quotes widget, nowhere to show prices: the coins read as off (and stay locked) until it is back on.
-            for (int i = COIN_ROWS; i < v.length - 3; i++) v[i] = onOff(Prefs.quotes() && Prefs.coin(i - COIN_ROWS));
-            v[v.length - 3] = keyValue(Recs.key());
-            v[v.length - 2] = keyValue(Recs.watchmodeKey());
-            v[v.length - 1] = updatesValue();
-            return v;
+            for (int i = COIN_ROWS; i < v.length - 4; i++) v[i] = onOff(Prefs.quotes() && Prefs.coin(i - COIN_ROWS));                for (int i = COIN_ROWS; i < v.length - 4; i++) v[i] = onOff(Prefs.quotes() && Prefs.coin(i - COIN_ROWS));
+                v[v.length - 4] = keyValue(Recs.key());
+                v[v.length - 3] = keyValue(Recs.watchmodeKey());
+                v[v.length - 2] = updatesValue();
+                v[v.length - 1] = onOff(!RemoteKeyService.isFilterOn(getContext()));
+                return v;
         }
 
         /**
