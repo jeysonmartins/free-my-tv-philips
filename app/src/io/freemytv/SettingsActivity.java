@@ -2334,8 +2334,7 @@ ModeJob.schedule(c, ModeJob.UPDATE, "", 0);           running = false;
                 if (focus == 0 && !freeActive()) {
                     pendingAt = SystemClock.uptimeMillis();
                     requestedAt = System.currentTimeMillis();
-                    ModeJob.schedule(getContext(), "switch", HomeMode.FREE, 0);
-                    spoken.focusMoved();
+ModeJob.schedule(getContext(), ModeJob.APPLY, HomeMode.FREE, 0);                    spoken.focusMoved();
                 } else if (focus == 1 && freeActive()) {
                     pendingAt = SystemClock.uptimeMillis();
                     requestedAt = System.currentTimeMillis();
