@@ -1043,9 +1043,17 @@ public class SettingsActivity extends Activity {
     return settingLabels().length - 2;
 }
 
-private int fastVolumeRow() {
-    return settingLabels().length - 1;
-}
+    private int fastVolumeRow() {
+        return settingLabels().length - 1;
+    }
+
+    private int keyRow() {
+        return updatesRow() - 2;
+    }
+
+    private int watchmodeRow() {
+        return updatesRow() - 1;
+    }
         /** A key's row: "Not set", or the key's last 4 characters (all that's ever shown of it). */
         private static String keyValue(String key) {
             return key.length() < 4 ? Ui.tr("Not set") : "•••• " + key.substring(key.length() - 4);
