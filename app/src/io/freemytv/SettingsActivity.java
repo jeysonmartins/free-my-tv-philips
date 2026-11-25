@@ -390,9 +390,7 @@ public class SettingsActivity extends Activity {
             commitWatch();
             if (running && !busy() && memoryMissing()) {
                 AppLog.w("memory of " + state.optString("mode") + " missing: measuring again");
-                ModeJob.schedule(getContext(), "memory", state.optString("mode"), 5_000);
-            }
-            running = false;
+ModeJob.schedule(c, ModeJob.UPDATE, "", 0);           running = false;
             handler.removeCallbacks(poll);
             handler.removeCallbacks(askWatch);
             Choreographer.getInstance().removeFrameCallback(this);
