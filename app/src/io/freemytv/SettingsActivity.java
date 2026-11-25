@@ -2480,6 +2480,10 @@ private int fastVolumeRow() {
         private void activate() {
             Context c = getContext();
             if (tellWhy()) return;
+                        if (screen == HOME_SETTINGS && pickScroll + focus == fastVolumeRow()) {
+                adjust(1);
+                return;
+            }
             if (screen == HOME_CHOICE) {
                 boolean wantFree = focus == 0;
                 boolean already = wantFree ? freeActive() : HomeMode.ORIGINAL.equals(state.optString("mode", HomeMode.ORIGINAL));
