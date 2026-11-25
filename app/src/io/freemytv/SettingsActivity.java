@@ -390,7 +390,7 @@ public class SettingsActivity extends Activity {
             commitWatch();
             if (running && !busy() && memoryMissing()) {
                 AppLog.w("memory of " + state.optString("mode") + " missing: measuring again");
-                ModeJob.schedule(getContext(), ModeJob.MEMORY, state.optString("mode"), 5_000);
+                ModeJob.schedule(getContext(), "memory", state.optString("mode"), 5_000);
             }
             running = false;
             handler.removeCallbacks(poll);
@@ -955,7 +955,7 @@ public class SettingsActivity extends Activity {
             l.add(Ui.tr("TMDB key"));
             l.add(Ui.tr("Watchmode key"));
             l.add(Ui.tr("Updates"));
-            l.add(Ui.tr("Fast Volume (No App Buttons)"));
+            l.add("Fast Volume (No App Buttons)");
             return l.toArray(new String[0]);
         }
 
@@ -1065,7 +1065,8 @@ public class SettingsActivity extends Activity {
             v[v.length - 1] = onOff(!RemoteKeyService.isFilterOn(getContext()));
             return v;
         }
-                    private String liveButtonValue() {
+
+        private String liveButtonValue() {
             if (liveButtonText == null || liveButtonAt != Prefs.version) {
                 HomeApps.Item box = HomeApps.liveButtonInput(getContext());
                 liveButtonText = box != null ? box.label : Ui.tr("Live TV");
@@ -1479,11 +1480,11 @@ public class SettingsActivity extends Activity {
             if (Updates.ready(updates, installed)) {
                 if (now - installAskedAt < 5000) return;
                 installAskedAt = now;
-                ModeJob.schedule(c, ModeJob.INSTALL, "", 0);
+                ModeJob.schedule(c, "install", "", 0);
             } else {
                 if (Updates.busy(updates) || checkAsked()) return;
                 checkAskedAt = now;
-                ModeJob.schedule(c, ModeJob.UPDATE, "", 0);
+                ModeJob.schedule(c, "update", "", 0);
             }
             handler.removeCallbacks(poll);
             handler.postDelayed(poll, 500);
@@ -2250,7 +2251,7 @@ public class SettingsActivity extends Activity {
                 Prefs.setLanguage(languageChoices()[at]);
                 showSettingsRow(0);
             } else if (pickFor == PICK_CITY) {
-                Prefs.setCity(cities.get(at)[0], cities.get(at)[1]);
+                Prefs.setCity(cities.get(at)[0], cities.get(at)[1], "");
                 showSettingsRow(CITY_ROW);
             } else if (pickFor == PICK_SLEEP) {
                 pickPower();
@@ -2329,18 +2330,18 @@ public class SettingsActivity extends Activity {
                     focus = 0;
                     pickScroll = 0;
                 } else if (focus == 8) {
-                    startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS));
+                    activity.startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS));
                 }
             } else if (screen == HOME_CHOICE) {
                 if (focus == 0 && !freeActive()) {
                     pendingAt = SystemClock.uptimeMillis();
                     requestedAt = System.currentTimeMillis();
-                    ModeJob.schedule(getContext(), ModeJob.SWITCH, HomeMode.FREE, 0);
+                    ModeJob.schedule(getContext(), "switch", HomeMode.FREE, 0);
                     spoken.focusMoved();
                 } else if (focus == 1 && freeActive()) {
                     pendingAt = SystemClock.uptimeMillis();
                     requestedAt = System.currentTimeMillis();
-                    ModeJob.schedule(getContext(), ModeJob.SWITCH, HomeMode.ORIGINAL, 0);
+                    ModeJob.schedule(getContext(), "switch", HomeMode.ORIGINAL, 0);
                     spoken.focusMoved();
                 }
             } else if (screen == HOME_SETTINGS) {
