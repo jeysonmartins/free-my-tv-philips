@@ -5,20 +5,14 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 
-/**
- * Sees the remote's keys before any app does, so the app buttons work from inside Netflix, Disney and the rest. The
- * system waits for it on every key (up to half a second), so it runs in a process of its own and does next to nothing.
- *
- * Volume keys are handled here: once an accessibility service filters keys, this TV's firmware stops repeating the
- * volume on its own. This service repeats it, so holding the button keeps going. A safety timeout stops the repeat
- * if the "release" key never arrives.
- */
 public class RemoteKeyService extends AccessibilityService {
+    private static final String TAG = "FreeMyTV-Keys";
     private static final long REPEAT_INTERVAL_MS = 150;
-    private static final long SAFETY_TIMEOUT_MS = 5000;
+    private static final long SAFETY_TIMEOUT_MS = 3000;
 
     private Handler handler;
     private Runnable volumeRepeat;
@@ -27,22 +21,34 @@ public class RemoteKeyService extends AccessibilityService {
     @Override protected void onServiceConnected() {
         super.onServiceConnected();
         handler = new Handler(Looper.getMainLooper());
+        Log.d(TAG, "onServiceConnected");
     }
 
     @Override protected boolean onKeyEvent(KeyEvent event) {
         int code = event.getKeyCode();
-        if (code == KeyEvent.KEYCODE_VOLUME_UP || code == KeyEvent.KEYCODE_VOLUME_DOWN) {
-            int action = event.getAction();
+        int action = event.getAction();
+        int repeat = event.getRepeatCount();
+        boolean isVolume = (code == KeyEvent.KEYCODE_VOLUME_UP || code == KeyEvent.KEYCODE_VOLUME_DOWN);
+
+        Log.d(TAG, "onKeyEvent code=" + code + " action=" + action + " repeat=" + repeat + " isVolume=" + isVolume);
+
+        if (isVolume) {
             if (action == KeyEvent.ACTION_DOWN) {
-                if (event.getRepeatCount() == 0) {
+                if (repeat == 0) {
+                    Log.d(TAG, "volume DOWN first -> startVolumeRepeat");
                     startVolumeRepeat(code);
+                } else {
+                    Log.d(TAG, "volume DOWN repeat#" + repeat + " (our own handler drives the repeat)");
                 }
                 return true;
             } else if (action == KeyEvent.ACTION_UP) {
+                Log.d(TAG, "volume UP -> stopVolumeRepeat");
                 stopVolumeRepeat();
                 return true;
             }
+            return true;
         }
+
         return RemoteKeys.onKey(this, event);
     }
 
@@ -55,6 +61,7 @@ public class RemoteKeyService extends AccessibilityService {
         volumeRepeat = new Runnable() {
             @Override public void run() {
                 if (System.currentTimeMillis() - startTime > SAFETY_TIMEOUT_MS) {
+                    Log.d(TAG, "safety timeout -> stop");
                     stopVolumeRepeat();
                     return;
                 }
@@ -69,11 +76,21 @@ public class RemoteKeyService extends AccessibilityService {
 
     private void adjustVolumeOnce() {
         AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        if (am == null || activeVolumeKey == 0) return;
-        am.adjustStreamVolume(
-            AudioManager.STREAM_MUSIC,
-            activeVolumeKey == KeyEvent.KEYCODE_VOLUME_UP ? AudioManager.ADJUST_RAISE : AudioManager.ADJUST_LOWER,
-            AudioManager.FLAG_SHOW_UI);
+        if (am == null) { Log.w(TAG, "AudioManager null"); return; }
+        if (activeVolumeKey == 0) return;
+        int direction = (activeVolumeKey == KeyEvent.KEYCODE_VOLUME_UP) ? AudioManager.ADJUST_RAISE : AudioManager.ADJUST_LOWER;
+
+        int musicBefore = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+        am.adjustStreamVolume(AudioManager.STREAM_MUSIC, direction, 0);
+        int musicAfter = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+        Log.d(TAG, "adjustStreamVolume MUSIC " + musicBefore + " -> " + musicAfter);
+
+        if (musicBefore == musicAfter) {
+            Log.d(TAG, "MUSIC unchanged, trying adjustSuggestedStreamVolume");
+            am.adjustSuggestedStreamVolume(direction, AudioManager.USE_DEFAULT_STREAM_TYPE, 0);
+            int musicAfter2 = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+            Log.d(TAG, "after suggested, MUSIC = " + musicAfter2);
+        }
     }
 
     private void stopVolumeRepeat() {
@@ -85,6 +102,5 @@ public class RemoteKeyService extends AccessibilityService {
     }
 
     @Override public void onAccessibilityEvent(AccessibilityEvent event) {}
-
     @Override public void onInterrupt() {}
 }
