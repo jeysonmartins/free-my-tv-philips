@@ -24,6 +24,7 @@ public class RemoteKeyService extends AccessibilityService {
     public static void setFilter(Context context, boolean on) {
         context.getSharedPreferences("settings", Context.MODE_PRIVATE).edit().putBoolean("key_filter", on).apply();
         Intent intent = new Intent(ACTION_SET_FILTER);
+        intent.setPackage(context.getPackageName());
         intent.putExtra(EXTRA_FILTER_ON, on);
         context.sendBroadcast(intent);
     }
@@ -54,10 +55,16 @@ public class RemoteKeyService extends AccessibilityService {
                     info.flags &= ~AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
                 }
                 setServiceInfo(info);
-                Log.d(TAG, "filter set to " + on + ", flags now=" + info.flags);
+                Log.d(TAG, "filter set to " + on);
             }
         };
-        registerReceiver(filterReceiver, new IntentFilter(ACTION_SET_FILTER));
+        
+        IntentFilter filter = new IntentFilter(ACTION_SET_FILTER);
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            registerReceiver(filterReceiver, filter, Context.RECEIVER_EXPORTED);
+        } else {
+            registerReceiver(filterReceiver, filter);
+        }
     }
 
     @Override public boolean onUnbind(Intent intent) {
