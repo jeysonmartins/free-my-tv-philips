@@ -1796,7 +1796,7 @@ public class SettingsActivity extends Activity {
             invalidate();
         }
 
-                private void activate() {
+                   private void activate() {
             if (tellWhy()) return;
 
             if (screen == HOME_SETTINGS && pickScroll + focus == fastVolumeRow()) {
@@ -1880,7 +1880,6 @@ public class SettingsActivity extends Activity {
             invalidate();
             spoken.focusMoved();
         }
-        private void activateKey() {
             if (focus >= keyRowIds.length) return;
             switch (keyRowIds[focus]) {
                 case K_NEW: startKeyPage(); break;
