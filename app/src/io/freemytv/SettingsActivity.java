@@ -2478,12 +2478,7 @@ public class SettingsActivity extends Activity {
                         : RemoteKeys.GOOGLE_STREAMER ? Ui.tr("The other buttons: the TV itself controls them.")
                         : RemoteKeys.ONN ? Ui.tr("onn default: the button opens what it always did.")
                         : RemoteKeys.supported() ? Ui.tr("Disney and Globoplay: the TV itself controls those buttons.")
-                                   if (screen == HOME_SETTINGS && pickScroll + focus == fastVolumeRow()) {
-                boolean filterOn = RemoteKeyService.isFilterOn(getContext());
-                RemoteKeyService.setFilter(getContext(), !filterOn);
-                invalidate();
-                return;
-            }
+                                       }
             if (screen == HOME_CHOICE) {
                 boolean wantFree = focus == 0;
                 boolean already = wantFree ? freeActive() : HomeMode.ORIGINAL.equals(state.optString("mode", HomeMode.ORIGINAL));
