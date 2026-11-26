@@ -1432,16 +1432,17 @@ public class SettingsActivity extends Activity {
         }
 
         /** Changes the focused row's value one step (OK and → go forward, ← goes back). */
-        private void adjust(int dir) {
-            // Refused or without Free My TV mode, Now Playing can still be turned off (and the refusal is then forgotten).
+              private void adjust(int dir) {
             boolean turnOff = screen == HOME_SETTINGS && pickScroll + focus == PLAYING_ROW && Prefs.nowPlaying();
             if (unavailable(focus) != null && !turnOff) return;
-                        if (screen == HOME_SETTINGS && pickScroll + focus == fastVolumeRow()) {
+
+            if (screen == HOME_SETTINGS && pickScroll + focus == fastVolumeRow()) {
                 boolean filterOn = RemoteKeyService.isFilterOn(getContext());
                 RemoteKeyService.setFilter(getContext(), !filterOn);
                 invalidate();
                 return;
-            }
+            } // <--- ESSA CHAVE AQUI É A SALVAÇÃO DA PÁTRIA!
+
             if (screen == PICKS) {
                 if (focus == 0) {
                     int n = Prefs.cards() - 3, span = Recs.MAX_CARDS - 3 + 1;
