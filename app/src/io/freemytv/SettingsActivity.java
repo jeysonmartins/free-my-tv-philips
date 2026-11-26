@@ -1796,6 +1796,90 @@ public class SettingsActivity extends Activity {
             invalidate();
         }
 
+                private void activate() {
+            if (tellWhy()) return;
+
+            if (screen == HOME_SETTINGS && pickScroll + focus == fastVolumeRow()) {
+                adjust(1);
+                return;
+            }
+
+            if (screen == MAIN) {
+                if (focus == 0) screen = HOME_CHOICE;
+                else if (focus == 1) activity.showPreview();
+                else if (focus == 2) {
+                    screen = HOME_SETTINGS;
+                    focus = 0;
+                    pickScroll = 0;
+                } else if (focus == 3) openShelfEditor(false);
+                else if (focus == 4) openShelfEditor(true);
+                else if (focus == 5) openInputsEditor();
+                else if (focus == 6) {
+                    screen = REMOTE_KEYS;
+                    focus = 0;
+                    pickScroll = 0;
+                } else if (focus == 7) {
+                    screen = POWER;
+                    focus = 0;
+                    pickScroll = 0;
+                } else if (focus == 8) {
+                    activity.startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS));
+                }
+            } else if (screen == HOME_CHOICE) {
+                if (focus == 0 && !freeActive()) {
+                    pendingAt = SystemClock.uptimeMillis();
+                    requestedAt = System.currentTimeMillis();
+                    ModeJob.schedule(getContext(), ModeJob.APPLY, HomeMode.FREE, 0);
+                    spoken.focusMoved();
+                } else if (focus == 1 && freeActive()) {
+                    pendingAt = SystemClock.uptimeMillis();
+                    requestedAt = System.currentTimeMillis();
+                    ModeJob.schedule(getContext(), ModeJob.APPLY, HomeMode.ORIGINAL, 0);
+                    spoken.focusMoved();
+                }
+            } else if (screen == HOME_SETTINGS) {
+                int row = pickScroll + focus;
+                if (row == 0) openPicker(PICK_LANGUAGE);
+                else if (row == CITY_ROW) askCity();
+                else if (row == PICKS_ROW) { screen = PICKS; focus = 0; pickScroll = 0; }
+                else if (row == WATCH_ROW) openWatchApps();
+                else if (row == keyRow()) openKeyScreen(false);
+                else if (row == watchmodeRow()) openKeyScreen(true);
+                else if (row == updatesRow()) updateNow();
+                else if (row == PHOTOS_ROW) {
+                    if (ImmichPhotos.configured(getContext())) openPhotoSources();
+                    else askRemovePhotos();
+                } else {
+                    adjust(1);
+                }
+            } else if (screen == REMOTE_KEYS) {
+                openPicker(focus + 1);
+            } else if (screen == PICKER) {
+                pick();
+            } else if (screen == SHELF_EDIT) {
+                toggleShelfApp();
+            } else if (screen == PICKS) {
+                if (focus == 1) {
+                    screen = PICK_FROM;
+                    focus = 0;
+                    pickScroll = 0;
+                } else if (traktRow() >= 0 && focus == traktRow()) {
+                    traktOk();
+                } else {
+                    adjust(1);
+                }
+            } else if (screen == PICK_FROM) {
+                toggleService();
+            } else if (screen == WATCH_APPS) {
+                toggleWatchApp();
+            } else if (screen == POWER) {
+                activatePower();
+            } else if (screen == TMDB_KEY) {
+                activateKey();
+            }
+            invalidate();
+            spoken.focusMoved();
+        }
         private void activateKey() {
             if (focus >= keyRowIds.length) return;
             switch (keyRowIds[focus]) {
