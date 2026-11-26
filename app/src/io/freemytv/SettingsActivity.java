@@ -2472,19 +2472,7 @@ public class SettingsActivity extends Activity {
                     : screen == HOME_SETTINGS && from + focus == updatesRow() ? (Updates.ready(updates, installed)
                     ? Ui.tr("OK installs it; Android asks first.") : Ui.tr("OK checks for a new version."))
                     : Ui.tr("OK or the arrows change the value.")), LIST_X * k + 30 * k, hy, hint);
-            if (keys) {
-                c.drawText(RemoteKeys.VESTEL ? Ui.tr("YouTube, Prime Video and Google Play: the TV itself controls those buttons.")
-                        : RemoteKeys.KTC ? Ui.tr("Netflix, YouTube and Prime Video: the TV itself controls those buttons.")
-                        : RemoteKeys.SONY ? Ui.tr("Sony default: the button opens what it always did.")
-                        : RemoteKeys.PHILIPS_GTV ? Ui.tr("Philips default: the button opens what it always did.")
-                        : RemoteKeys.FORMOVIE || RemoteKeys.JVC_SKYWORTH || RemoteKeys.XIAOMI_AFKR0
-                        ? Ui.tr("The other buttons: the TV itself controls them.")
-                        : RemoteKeys.XIAOMI ? Ui.tr("Xiaomi default: the button opens what it always did.")
-                        : RemoteKeys.HISENSE ? Ui.tr("Netflix: the TV itself controls that button.")
-                        : RemoteKeys.GOOGLE_STREAMER ? Ui.tr("The other buttons: the TV itself controls them.")
-                        : RemoteKeys.ONN ? Ui.tr("onn default: the button opens what it always did.")
-                        : RemoteKeys.supported() ? Ui.tr("Disney and Globoplay: the TV itself controls those buttons."));
-                                       }
+                                         }
             if (screen == HOME_CHOICE) {
                 boolean wantFree = focus == 0;
                 boolean already = wantFree ? freeActive() : HomeMode.ORIGINAL.equals(state.optString("mode", HomeMode.ORIGINAL));
