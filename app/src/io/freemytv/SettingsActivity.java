@@ -2483,7 +2483,7 @@ public class SettingsActivity extends Activity {
                         : RemoteKeys.HISENSE ? Ui.tr("Netflix: the TV itself controls that button.")
                         : RemoteKeys.GOOGLE_STREAMER ? Ui.tr("The other buttons: the TV itself controls them.")
                         : RemoteKeys.ONN ? Ui.tr("onn default: the button opens what it always did.")
-                        : RemoteKeys.supported() ? Ui.tr("Disney and Globoplay: the TV itself controls those buttons.")
+                        : RemoteKeys.supported() ? Ui.tr("Disney and Globoplay: the TV itself controls those buttons."));
                                        }
             if (screen == HOME_CHOICE) {
                 boolean wantFree = focus == 0;
